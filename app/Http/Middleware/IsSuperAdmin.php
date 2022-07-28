@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 
 class IsSuperAdmin
 {
+    const SUPER_ADMIN_ROLE = 3;
+
     /**
      * Handle an incoming request.
      *
@@ -23,7 +25,7 @@ class IsSuperAdmin
         $userId = auth()->user()->id;
         $user = User::find($userId);
 
-        $hasRole = $user->roles->contains(3);
+        $hasRole = $user->roles->contains(self::SUPER_ADMIN_ROLE);
 
         if(!$hasRole){
             return response()->json(
