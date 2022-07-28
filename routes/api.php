@@ -34,5 +34,7 @@ Route::group(
     ['middleware'=> 'jwt.auth'],
     function(){
         Route::get('/users/{id}', [UserController::class, 'getUserById']);
+        Route::pos('/users/{id}', [UserController::class, 'addRoleSuperAdminToUserById']);
+        Route::delete('/users/{id}', [UserController::class, 'deleteUserById']);
     }
 );
