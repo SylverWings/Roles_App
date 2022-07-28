@@ -31,10 +31,10 @@ Route::group(
 );
 
 Route::group(
-    ['middleware'=> 'jwt.auth'],
+    ['middleware'=> ['jwt.auth', 'isSuperAdmin']],
     function(){
         Route::get('/users/{id}', [UserController::class, 'getUserById']);
-        Route::pos('/users/{id}', [UserController::class, 'addRoleSuperAdminToUserById']);
+        Route::post('/users/{id}', [UserController::class, 'addRoleSuperAdminToUserById']);
         Route::delete('/users/{id}', [UserController::class, 'deleteUserById']);
     }
 );
