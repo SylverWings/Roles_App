@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -10,23 +11,68 @@ use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
-    public function getAllTasks()
+    public function getAllTasksByUserId()
     {
         try {
             Log::info('Getting all Tasks');
             
-            $task = DB::table('tasks')->select('title', 'user_id')->get()->toArray();
+            $userId= auth()->user()->id;            
+            $task = User::find($userId)->tasks;
+
+            //otra forma de hacerlo seria
+
+            //$tasks = Task::query()->where('user_id', '=', '$userId')->get()->toArray();
 
             return response()->json(
                 [
                     'success' => true,
-                    'message' => "Get all taks retrieved.",
+                    'message' => "Get all tasks retrieved successfully.",
                     'data' => $task
                 ],
                 200
             );
         } catch (\Exception $exception) {
-            Log::error('Error getting tasks: ' . $exception->getMessage());
+            Log::error('Error getting all tasks: ' . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => "Error getting tasks"
+                ],
+                500
+            );
+        }
+    }
+
+    public function getOneTasksById($id)
+    {
+        try {
+            Log::info('Get task my id');
+
+            $userId= auth()->user()->id;
+            $task = Task::query()->where('user_id', '=', '$userId')->find($id);
+
+            if(!$task){
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => "Task not found"
+                    ],
+                    404
+                );
+            }
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => "Get tasks retrieved successfully.",
+                    'data' => $task
+                ],
+                200
+            );
+
+        } catch (\Exception $exception) {
+            Log::error('Error getting tasks by id : ' . $exception->getMessage());
 
             return response()->json(
                 [
@@ -102,7 +148,8 @@ class TaskController extends Controller
                 );
             };    
 
-            $task = Task::query()->findOrFail($id);
+            $userId= auth()->user()->id;
+            $task = Task::query()->where('user_id', '=', '$userId')->find($id);
 
             $title = $request->input('title');
 
@@ -135,12 +182,25 @@ class TaskController extends Controller
     public function deleteContact($id)
     {
         try {
-            Task::query()->find($id)->delete();
+
+            $userId= auth()->user()->id;
+            $task = Task::query()->where('user_id', '=', '$userId')->find($id);
+            $task->delete();
+
+            if(!$task){
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => "Task can not be delete"
+                    ],
+                    404
+                );
+            }
 
             return response()->json(
                 [
                     "success" => true,
-                    "messagge" => "Task created"
+                    "messagge" => "Task delete successfully"
                 ],
                 200
             );
